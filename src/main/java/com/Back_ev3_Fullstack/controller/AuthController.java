@@ -1,5 +1,6 @@
 package com.Back_ev3_Fullstack.controller;
 
+import com.Back_ev3_Fullstack.dto.JwtResponse;
 import com.Back_ev3_Fullstack.dto.LoginRequest;
 import com.Back_ev3_Fullstack.dto.LoginResponse;
 import com.Back_ev3_Fullstack.dto.RegistroRequest;
@@ -47,12 +48,23 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getCorreo(), req.getContrasenia()));
+            // Validar credenciales usando AuthenticationManager
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(req.getCorreo(), req.getContrasenia())
+            );
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+            // Credenciales inválidas
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Credenciales inválidas");
         }
+
+        // Obtener información del usuario
         UserDetails userDetails = userDetailsService.loadUserByUsername(req.getCorreo());
+
+        // Generar token JWT
         String token = jwtUtil.generateToken(userDetails);
+
+        // Retornar token en un Map
         return ResponseEntity.ok(Map.of("token", token));
     }
 
