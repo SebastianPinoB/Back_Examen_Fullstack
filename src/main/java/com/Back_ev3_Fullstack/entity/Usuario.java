@@ -2,10 +2,9 @@ package com.Back_ev3_Fullstack.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -24,15 +23,24 @@ public class Usuario {
     private String correo;
 
     @Column(nullable = false)
-    private String contrasenia; // almacenada con hash
+    private String contrasenia;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "usuario_roles",
+            joinColumns = @JoinColumn(name = "usuario_id")
+    )
+    @Column(name = "role")
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
 
-    public String getContrasenia() {
-        return contrasenia;
+    public Long getId() {
+        return id;
     }
 
-    public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getCorreo() {
@@ -43,11 +51,20 @@ public class Usuario {
         this.correo = correo;
     }
 
-    public Long getId() {
-        return id;
+    public String getContrasenia() {
+        return contrasenia;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setContrasenia(String contrasenia) {
+        this.contrasenia = contrasenia;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 }
+

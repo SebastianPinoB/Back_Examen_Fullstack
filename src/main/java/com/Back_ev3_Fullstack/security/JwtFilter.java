@@ -3,7 +3,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,37 +15,41 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    public JwtFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-
-        // El encabezado debe venir así: Authorization: Bearer xxxxx
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7); // Remueve "Bearer "
-            username = jwtUtil.extractUsername(token);
+        // 👉 IGNORAR rutas públicas
+        String path = request.getServletPath();
+        if (path.startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        // Si tenemos token y no hay usuario ya autenticado
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        final String authHeader = request.getHeader("Authorization");
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            // Validar token
+        String token = authHeader.substring(7);
+        String correo = jwtUtil.extractUsername(token);
+
+        if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
+
             if (jwtUtil.validateToken(token, userDetails)) {
-
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -54,15 +57,11 @@ public class JwtFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities()
                         );
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        // Continua la cadena del filtro
         filterChain.doFilter(request, response);
     }
 }

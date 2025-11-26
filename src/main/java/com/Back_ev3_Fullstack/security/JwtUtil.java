@@ -9,10 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
@@ -20,7 +19,6 @@ public class JwtUtil {
     // Esta clave debe tener al menos 32 caracteres (256 bits)
     private final String SECRET = "12345678901234567890123456789012";
 
-    // --- CORREGIDO: usamos el string tal cual, no Base64 ---
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
@@ -44,6 +42,15 @@ public class JwtUtil {
                 .getBody();
     }
 
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        Object roles = claims.get("roles");
+        if (roles instanceof List) {
+            return ((List<?>) roles).stream().map(Object::toString).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String correo = extractUsername(token);
         return correo.equals(userDetails.getUsername()) && !isTokenExpired(token);
@@ -57,9 +64,15 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public String generateToken(String correo) {
+    // Generar token a partir de UserDetails para incluir roles
+    public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, correo);
+        // extraer roles desde UserDetails y poner en claim
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority().replace("ROLE_", "")) // guardamos sin prefix
+                .collect(Collectors.toList());
+        claims.put("roles", roles);
+        return createToken(claims, userDetails.getUsername());
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
