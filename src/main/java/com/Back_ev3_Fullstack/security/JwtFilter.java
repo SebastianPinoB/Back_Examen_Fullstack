@@ -8,12 +8,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,15 +31,17 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // IGNORAR rutas públicas
+        // Rutas públicas
         String path = request.getServletPath();
-        if (path.startsWith("/auth/")) {
+        if (path.startsWith("/auth/login") || path.startsWith("/auth/register")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Leer encabezado Authorization
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -48,34 +50,43 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String correo = jwtUtil.extractUsername(token);
+
+        Claims claims;
+        try {
+            claims = jwtUtil.extractAllClaims(token);
+        } catch (Exception e) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Correo del token (subject)
+        String correo = claims.getSubject();
 
         if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
+            var userDetails = userDetailsService.loadUserByUsername(correo);
 
-            if (jwtUtil.validateToken(token, userDetails)) {
+            @SuppressWarnings("unchecked")
+            List<String> roles = claims.get("roles", List.class);
 
-                // EXTRAER ROLES DEL TOKEN
-                Claims claims = jwtUtil.extractAllClaims(token);
-                List<String> roles = (List<String>) claims.get("roles");
+            if (roles == null) roles = new ArrayList<>();
 
-                List<GrantedAuthority> authorities = roles.stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                        .collect(Collectors.toList());
+            // Mapear roles a authorities
+            List<GrantedAuthority> authorities =
+                    roles.stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
 
-                // Crear authentication con authorities del JWT
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                authorities
-                        );
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            authorities
+                    );
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);
