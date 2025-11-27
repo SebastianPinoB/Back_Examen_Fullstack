@@ -5,7 +5,6 @@ import com.Back_ev3_Fullstack.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
