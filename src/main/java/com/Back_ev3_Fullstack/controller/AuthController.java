@@ -69,7 +69,8 @@ public class AuthController {
         }
 
         // Obtener el usuario real desde DB
-        Usuario usuario = usuarioRepository.findByCorreo(req.getCorreo());
+        Usuario usuario = usuarioRepository.findByCorreo(req.getCorreo())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         List<String> rolesConPrefijo = usuario.getRoles()
                 .stream()
@@ -93,7 +94,7 @@ public class AuthController {
     })
     public ResponseEntity<String> registro(@RequestBody RegistroRequest request) {
 
-        if (usuarioRepository.findByCorreo(request.getCorreo()) != null) {
+        if (usuarioRepository.findByCorreo(request.getCorreo()).isPresent()) {
             return ResponseEntity.badRequest().body("El correo ya está registrado");
         }
 
