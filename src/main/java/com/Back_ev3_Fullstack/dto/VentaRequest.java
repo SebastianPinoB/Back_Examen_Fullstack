@@ -20,6 +20,5 @@ public class VentaRequest {
     public static class ItemVenta {
         private Long productoId;
         private Integer cantidad;
-        private Integer precio;
     }
 }

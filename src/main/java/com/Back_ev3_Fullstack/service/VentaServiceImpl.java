@@ -32,7 +32,6 @@ public class VentaServiceImpl implements VentaService {
 
         Venta venta = new Venta();
         venta.setFechaVenta(LocalDateTime.now());
-        venta.setTotal(request.getTotal());
         venta.setUsuario(usuario);
 
         List<DetalleVenta> detalles = request.getItems().stream().map(item -> {
@@ -40,17 +39,26 @@ public class VentaServiceImpl implements VentaService {
             Producto producto = productoRepository.findById(item.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
+            Integer precioReal = producto.getPrecio(); // tomado de la BD
+
             DetalleVenta d = new DetalleVenta();
             d.setProducto(producto);
             d.setCantidad(item.getCantidad());
-            d.setPrecioUnitario(item.getPrecio());
-            d.setSubtotal(item.getCantidad() * item.getPrecio());
+            d.setPrecioUnitario(precioReal);
+            d.setSubtotal(precioReal * item.getCantidad());
             d.setVenta(venta);
 
             return d;
         }).collect(Collectors.toList());
 
         venta.setDetalles(detalles);
+
+        // calcular total real
+        Integer total = detalles.stream()
+                .mapToInt(DetalleVenta::getSubtotal)
+                .sum();
+
+        venta.setTotal(total);
 
         ventaRepository.save(venta);
         return VentaMapper.toResponse(venta);
