@@ -10,4 +10,9 @@ import lombok.Setter;
 public class CategoriaRequestDTO{
     private String nombre;
 
+    public CategoriaRequestDTO(String nombre) {
+        this.nombre = nombre;
+    }
+
+
 }
