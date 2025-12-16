@@ -25,6 +25,14 @@ public class Usuario {
     @Column(nullable = false)
     private String contrasenia;
 
+    private String nombreCompleto;
+    private String telefono;
+    private String fechaNacimiento;
+    private Integer edad;
+    private Boolean isDuocStudent;
+    private Integer descuentoPermanente;
+    private String codigoReferido;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(

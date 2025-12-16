@@ -14,6 +14,8 @@ public class ProductoRequestDTO {
     private Integer precio;
     private Integer stock;
     private String imagen;
+    private String descripcion;
     private Long categoriaId;
-
+    private Double rating;
+    private Integer numResenas;
 }

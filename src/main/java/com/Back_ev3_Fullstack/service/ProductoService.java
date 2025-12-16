@@ -31,8 +31,12 @@ public class ProductoService {
                 .precio(dto.getPrecio())
                 .stock(dto.getStock())
                 .imagen(dto.getImagen())
+                .descripcion(dto.getDescripcion())
                 .categoria(categoria)
                 .build();
+        producto.setActivo(true);
+        producto.setRating(0.0);
+        producto.setNumResenas(0);
 
         Producto guardado = repo.save(producto);
 
@@ -42,21 +46,30 @@ public class ProductoService {
                 guardado.getPrecio(),
                 guardado.getStock(),
                 guardado.getImagen(),
-                guardado.getCategoria().getId()
+                guardado.getDescripcion(),
+                guardado.getCategoria().getId(),
+                guardado.getCategoria().getNombre(),
+                guardado.getRating(),
+                guardado.getNumResenas()
         );
     }
 
-    // Listar productos
+    // Listar productos activos
     public List<ProductoResponseDTO> listar() {
         return repo.findAll()
                 .stream()
+                .filter(p -> p.getActivo() != null && p.getActivo()) // Solo activos
                 .map(p -> new ProductoResponseDTO(
                         p.getId(),
                         p.getNombre(),
                         p.getPrecio(),
                         p.getStock(),
                         p.getImagen(),
-                        p.getCategoria().getId()
+                        p.getDescripcion(),
+                        p.getCategoria().getId(),
+                        p.getCategoria().getNombre(),
+                        p.getRating(),
+                        p.getNumResenas()
                 ))
                 .toList();
     }
@@ -72,7 +85,11 @@ public class ProductoService {
                 p.getPrecio(),
                 p.getStock(),
                 p.getImagen(),
-                p.getCategoria().getId()
+                p.getDescripcion(),
+                p.getCategoria().getId(),
+                p.getCategoria().getNombre(),
+                p.getRating(),
+                p.getNumResenas()
         );
     }
 
@@ -89,6 +106,7 @@ public class ProductoService {
         existente.setPrecio(dto.getPrecio());
         existente.setStock(dto.getStock());
         existente.setImagen(dto.getImagen());
+        existente.setDescripcion(dto.getDescripcion());
         existente.setCategoria(categoria);
 
         Producto guardado = repo.save(existente);
@@ -99,16 +117,21 @@ public class ProductoService {
                 guardado.getPrecio(),
                 guardado.getStock(),
                 guardado.getImagen(),
-                guardado.getCategoria().getId()
+                guardado.getDescripcion(),
+                guardado.getCategoria().getId(),
+                guardado.getCategoria().getNombre(),
+                guardado.getRating(),
+                guardado.getNumResenas()
         );
     }
 
     // Eliminar
     public void eliminar(Long id) {
-        if (!repo.existsById(id)) {
-            throw new RuntimeException("Producto no encontrado");
-        }
-        repo.deleteById(id);
+        Producto producto = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        producto.setActivo(false);
+        repo.save(producto);
     }
 
 }

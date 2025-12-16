@@ -15,5 +15,9 @@ public class ProductoResponseDTO {
     private Integer precio;
     private Integer stock;
     private String imagen;
+    private String descripcion;
     private Long categoriaId;
+    private String categoriaNombre;
+    private Double rating;
+    private Integer numResenas;
 }

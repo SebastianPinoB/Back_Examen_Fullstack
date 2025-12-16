@@ -78,8 +78,7 @@ public class AuthController {
                 .toList();
 
         // Crear token CON roles convertidos
-        String token = jwtUtil.generateToken(usuario.getCorreo(), rolesConPrefijo);
-
+        String token = jwtUtil.generateToken(usuario.getCorreo(), usuario.getNombreCompleto(), rolesConPrefijo);
         return ResponseEntity.ok(Map.of("token", token));
     }
 
@@ -101,6 +100,13 @@ public class AuthController {
         Usuario usuario = new Usuario();
         usuario.setCorreo(request.getCorreo());
         usuario.setContrasenia(passwordEncoder.encode(request.getContrasenia()));
+        usuario.setNombreCompleto(request.getNombreCompleto());
+        usuario.setTelefono(request.getTelefono());
+        usuario.setFechaNacimiento(request.getFechaNacimiento());
+        usuario.setEdad(request.getEdad());
+        usuario.setIsDuocStudent(request.getIsDuocStudent());
+        usuario.setDescuentoPermanente(request.getDescuentoPermanente());
+        usuario.setCodigoReferido(request.getCodigoReferido());
         usuario.setRoles(new HashSet<>());
         usuario.getRoles().add(Role.USER);
 

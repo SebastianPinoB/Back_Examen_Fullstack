@@ -19,9 +19,10 @@ public class JwtUtilTest {
     @Test
     void generateToken_debeGenerarTokenValido() {
         String correo = "user@mail.com";
+        String nombre = "Usuario Test";
         List<String> roles = List.of("ROLE_USER");
 
-        String token = jwtUtil.generateToken(correo, roles);
+        String token = jwtUtil.generateToken(correo, nombre, roles);
 
         assertNotNull(token);
         assertFalse(token.isEmpty());
@@ -30,9 +31,10 @@ public class JwtUtilTest {
     @Test
     void extractAllClaims_debeRetornarClaimsCorrectos() {
         String correo = "user@mail.com";
+        String nombre = "Usuario Test";
         List<String> roles = List.of("ROLE_USER");
 
-        String token = jwtUtil.generateToken(correo, roles);
+        String token = jwtUtil.generateToken(correo, nombre, roles);
         Claims claims = jwtUtil.extractAllClaims(token);
 
         assertEquals(correo, claims.getSubject());
@@ -44,9 +46,10 @@ public class JwtUtilTest {
     @Test
     void extractCorreo_debeRetornarCorreoCorrecto() {
         String correo = "user@mail.com";
+        String nombre = "Usuario Test";
         List<String> roles = List.of("ROLE_USER");
 
-        String token = jwtUtil.generateToken(correo, roles);
+        String token = jwtUtil.generateToken(correo, nombre, roles);
 
         String extractedCorreo = jwtUtil.extractCorreo(token);
         assertEquals(correo, extractedCorreo);
@@ -55,9 +58,10 @@ public class JwtUtilTest {
     @Test
     void extractRoles_debeRetornarRolesCorrectos() {
         String correo = "user@mail.com";
+        String nombre = "Usuario Test";
         List<String> roles = List.of("ROLE_USER", "ROLE_ADMIN");
 
-        String token = jwtUtil.generateToken(correo, roles);
+        String token = jwtUtil.generateToken(correo, nombre, roles);
 
         List<String> extractedRoles = jwtUtil.extractRoles(token);
         assertEquals(roles, extractedRoles);

@@ -33,8 +33,8 @@ class ProductoControllerTest {
 
     @Test
     void testListarProductos() {
-        ProductoResponseDTO p1 = new ProductoResponseDTO(1L, "Producto1", 100, 10, "img1", 1L);
-        ProductoResponseDTO p2 = new ProductoResponseDTO(2L, "Producto2", 200, 5, "img2", 1L);
+        ProductoResponseDTO p1 = new ProductoResponseDTO(1L, "Producto1", 100, 10, "img1", "desc", 1L, "Categoria Test", 0.0, 0);
+        ProductoResponseDTO p2 = new ProductoResponseDTO(2L, "Producto2", 100, 10, "img1", "desc", 1L, "Categoria Test", 0.0, 0);
 
         when(productoService.listar()).thenReturn(List.of(p1, p2));
 
@@ -49,8 +49,8 @@ class ProductoControllerTest {
 
     @Test
     void testCrearProducto() {
-        ProductoRequestDTO request = new ProductoRequestDTO("Producto1", 100, 10, "img1", 1L);
-        ProductoResponseDTO responseDTO = new ProductoResponseDTO(1L, "Producto1", 100, 10, "img1", 1L);
+        ProductoRequestDTO request = new ProductoRequestDTO("Producto1", 100, 10, "img1", "desc", 1L, 0.0, 0);
+        ProductoResponseDTO responseDTO = new ProductoResponseDTO(2L, "Producto1", 100, 10, "img1", "desc", 1L, "Categoria Test", 0.0, 0);
 
         when(productoService.crear(request)).thenReturn(responseDTO);
 
@@ -64,7 +64,7 @@ class ProductoControllerTest {
 
     @Test
     void testObtenerProducto() {
-        ProductoResponseDTO responseDTO = new ProductoResponseDTO(1L, "Producto1", 100, 10, "img1", 1L);
+        ProductoResponseDTO responseDTO = new ProductoResponseDTO(1L, "Producto1", 100, 10, "img1", "desc", 1L, "Categoria Test", 0.0, 0);
 
         when(productoService.obtener(1L)).thenReturn(responseDTO);
 
@@ -78,8 +78,8 @@ class ProductoControllerTest {
 
     @Test
     void testActualizarProducto() {
-        ProductoRequestDTO request = new ProductoRequestDTO("Producto1", 150, 8, "img1_updated", 1L);
-        ProductoResponseDTO responseDTO = new ProductoResponseDTO(1L, "Producto1", 150, 8, "img1_updated", 1L);
+        ProductoRequestDTO request = new ProductoRequestDTO("producto1", 100, 10, "img1", "desc", 1L, 0.0, 0);
+        ProductoResponseDTO responseDTO = new ProductoResponseDTO(1L, "producto1", 150, 10, "img1", "desc", 1L, "Categoria Test", 0.0, 0);
 
         when(productoService.actualizar(1L, request)).thenReturn(responseDTO);
 

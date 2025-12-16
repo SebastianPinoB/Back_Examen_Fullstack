@@ -48,15 +48,17 @@ public class ProductoServiceTest {
                 .precio(500000)
                 .stock(5)
                 .imagen("laptop.png")
+                .descripcion("Desc")
                 .categoria(categoria)
+                .rating(0.0)
+                .numResenas(0)
+                .activo(true)
                 .build();
     }
 
     @Test
     void crear_debeCrearProducto() {
-        ProductoRequestDTO dto = new ProductoRequestDTO(
-                "Laptop", 500000, 5, "laptop.png", 1L
-        );
+        ProductoRequestDTO dto = new ProductoRequestDTO("Laptop", 100, 10, "img1", "desc", 1L, 0.0, 0);
 
         when(categoriaRepo.findById(1L)).thenReturn(Optional.of(categoria));
         when(repo.save(any(Producto.class))).thenReturn(producto);
@@ -70,9 +72,7 @@ public class ProductoServiceTest {
 
     @Test
     void crear_categoriaNoExiste_debeLanzarExcepcion() {
-        ProductoRequestDTO dto = new ProductoRequestDTO(
-                "Laptop", 500000, 5, "laptop.png", 1L
-        );
+        ProductoRequestDTO dto = new ProductoRequestDTO("Laptop", 100, 10, "img1", "desc", 1L, 0.0, 0);
 
         when(categoriaRepo.findById(1L)).thenReturn(Optional.empty());
 
@@ -110,9 +110,7 @@ public class ProductoServiceTest {
     @Test
     void actualizar_debeActualizarProducto() {
 
-        ProductoRequestDTO dto = new ProductoRequestDTO(
-                "Laptop PRO", 700000, 3, "new.png", 1L
-        );
+        ProductoRequestDTO dto = new ProductoRequestDTO("Laptop PRO", 700000, 10, "img1", "desc", 1L, 0.0, 0);
 
         when(repo.findById(10L)).thenReturn(Optional.of(producto));
         when(categoriaRepo.findById(1L)).thenReturn(Optional.of(categoria));
@@ -126,9 +124,7 @@ public class ProductoServiceTest {
 
     @Test
     void actualizar_categoriaNoExiste_debeLanzarExcepcion() {
-        ProductoRequestDTO dto = new ProductoRequestDTO(
-                "Laptop", 500000, 5, "laptop.png", 99L
-        );
+        ProductoRequestDTO dto = new ProductoRequestDTO("Laptop", 100, 10, "img1", "desc", 1L, 0.0, 0);
 
         when(repo.findById(10L)).thenReturn(Optional.of(producto));
         when(categoriaRepo.findById(99L)).thenReturn(Optional.empty());
@@ -139,16 +135,16 @@ public class ProductoServiceTest {
 
     @Test
     void eliminar_debeEliminarProducto() {
-        when(repo.existsById(10L)).thenReturn(true);
+        when(repo.findById(10L)).thenReturn(Optional.of(producto));
 
         service.eliminar(10L);
 
-        verify(repo, times(1)).deleteById(10L);
+        verify(repo, times(1)).save(producto);
     }
 
     @Test
     void eliminar_productoNoExiste_debeLanzarExcepcion() {
-        when(repo.existsById(10L)).thenReturn(false);
+        when(repo.findById(10L)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class,
                 () -> service.eliminar(10L));

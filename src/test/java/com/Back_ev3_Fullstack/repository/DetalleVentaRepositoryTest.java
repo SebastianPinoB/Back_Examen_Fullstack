@@ -1,6 +1,7 @@
 package com.Back_ev3_Fullstack.repository;
 
 import com.Back_ev3_Fullstack.entity.*;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -27,6 +28,7 @@ public class DetalleVentaRepositoryTest {
     private CategoriaRepository categoriaRepository;
 
     @Test
+    @Transactional
     public void testGuardarYRecuperarDetalleVenta() {
         // Crear y guardar una categoría
         Categoria categoria = Categoria.builder()
@@ -39,6 +41,7 @@ public class DetalleVentaRepositoryTest {
                 .nombre("Producto Test")
                 .precio(1000)
                 .stock(10)
+                .activo(true)
                 .categoria(categoria)
                 .build();
         producto = productoRepository.save(producto);
@@ -71,7 +74,7 @@ public class DetalleVentaRepositoryTest {
         DetalleVenta detalleRecuperado = detalleVentaRepository.findById(detalle.getId()).orElse(null);
         assertNotNull(detalleRecuperado);
         assertEquals(2000, detalleRecuperado.getSubtotal());
-        assertEquals("Producto Test", detalleRecuperado.getProducto().getNombre());
+        assertEquals("Producto Test",detalleRecuperado.getProducto().getNombre());
         assertEquals("test@example.com", detalleRecuperado.getVenta().getUsuario().getCorreo());
     }
 }

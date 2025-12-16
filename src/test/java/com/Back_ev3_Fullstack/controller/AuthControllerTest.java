@@ -9,9 +9,11 @@ import com.Back_ev3_Fullstack.security.CustomUserDetailsService;
 import com.Back_ev3_Fullstack.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
     @InjectMocks
@@ -49,30 +51,26 @@ class AuthControllerTest {
     private JwtUtil jwtUtil;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    void setUp() {}
 
     @Test
     void testLoginSuccess() {
         String correo = "test@example.com";
         String contrasenia = "1234";
 
-        // Mock de autenticación (devuelve cualquier Authentication para simular éxito)
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(correo, contrasenia);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authToken);
 
-        // Mock de usuario en repo
         Usuario usuario = new Usuario();
         usuario.setCorreo(correo);
+        usuario.setNombreCompleto("Test User");
         usuario.setRoles(new HashSet<>());
         usuario.getRoles().add(Role.USER);
 
         when(usuarioRepository.findByCorreo(correo)).thenReturn(Optional.of(usuario));
-        when(jwtUtil.generateToken(eq(correo), anyList())).thenReturn("mocked-jwt-token");
-
+        when(jwtUtil.generateToken(eq(correo), eq("Test User"), anyList())).thenReturn("mocked-jwt-token");
         LoginRequest req = new LoginRequest(correo, contrasenia);
 
         ResponseEntity<?> response = authController.login(req);
